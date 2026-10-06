@@ -577,7 +577,8 @@ static bool SetUpUsersListParameter (const UsersServiceData *data_p, Parameter *
 																					FreeFullUsername (name_s);
 																				}
 
-																		}		/* if (name_s) */
+																			FreeUser (user_p);
+																		}		/* if (user_p) */
 																	else
 																		{
 																			success_flag = false;
