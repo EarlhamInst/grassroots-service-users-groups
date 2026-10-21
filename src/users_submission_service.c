@@ -76,7 +76,7 @@ static ServiceMetadata *GetUsersSubmissionServiceMetadata (Service *service_p);
 static bool GetUsersSubmissionServiceParameterTypesForNamedParameters (const Service *service_p, const char *param_name_s, ParameterType *pt_p);
 
 
-static bool SetUpUsersListParameter (const UsersServiceData *data_p, Parameter *param_p, const User *active_user_p, const bool empty_option_flag);
+static bool SetUpUsersListParameter (const UsersServiceData *data_p, StringParameter *param_p, const User *active_user_p, const bool empty_option_flag);
 
 
 static json_t *GetAllUsersAsJSON (const UsersServiceData *data_p, const bool full_data_flag);
@@ -202,7 +202,7 @@ static ParameterSet *GetUsersSubmissionServiceParameters (Service *service_p, Da
 
 			if ((param_p = EasyCreateAndAddStringParameterToParameterSet (data_p, param_set_p, group_p, S_USER_ID.npt_type, S_USER_ID.npt_name_s, "Load User", "Edit an existing User", id_s, PL_ALL)) != NULL)
 				{
-					if (SetUpUsersListParameter (us_data_p, param_p, active_user_p, true))
+					if (SetUpUsersListParameter (us_data_p, (StringParameter *) param_p, active_user_p, true))
 						{
 							/*
 							 * We want to update all of the values in the form
@@ -511,7 +511,7 @@ static json_t *GetAllUsersAsJSON (const UsersServiceData *data_p, const bool ful
 }
 
 
-static bool SetUpUsersListParameter (const UsersServiceData *data_p, Parameter *param_p, const User *active_user_p, const bool empty_option_flag)
+static bool SetUpUsersListParameter (const UsersServiceData *data_p, StringParameter *param_p, const User *active_user_p, const bool empty_option_flag)
 {
 	bool success_flag = false;
 	json_t *results_p = GetAllUsersAsJSON (data_p, true);
@@ -530,7 +530,7 @@ static bool SetUpUsersListParameter (const UsersServiceData *data_p, Parameter *
 					 */
 					if (empty_option_flag)
 						{
-							success_flag = CreateAndAddStringParameterOption (param_p, S_EMPTY_LIST_OPTION_S, S_EMPTY_LIST_OPTION_S);
+							success_flag = CreateAndAddStringParameterOption (& (param_p -> sp_base_param), S_EMPTY_LIST_OPTION_S, S_EMPTY_LIST_OPTION_S);
 						}
 
 					if (success_flag)
@@ -567,7 +567,7 @@ static bool SetUpUsersListParameter (const UsersServiceData *data_p, Parameter *
 																							value_set_flag = true;
 																						}
 
-																					if (!CreateAndAddStringParameterOption (param_p, id_s, name_s))
+																					if (!CreateAndAddStringParameterOption (& (param_p -> sp_base_param), id_s, name_s))
 																						{
 																							success_flag = false;
 																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add param option \"%s\": \"%s\"", id_s, name_s);
