@@ -82,7 +82,7 @@ static bool SetUpUsersListParameter (const UsersServiceData *data_p, StringParam
 static json_t *GetAllUsersAsJSON (const UsersServiceData *data_p, const bool full_data_flag);
 
 
-static OperationStatus SaveUser (User *user_p, ServiceJob *job_p, UsersServiceData *data_p);
+static OperationStatus SaveSubmittedUser (User *user_p, ServiceJob *job_p, UsersServiceData *data_p);
 
 //static User *GetUserByIdString (const char *user_id_s, const UsersServiceData *data_p);
 
@@ -359,7 +359,7 @@ static ServiceJobSet *RunUsersSubmissionService (Service *service_p, ParameterSe
 
 																	if (user_p)
 																		{
-																			status = SaveUser (user_p, job_p, data_p);
+																			status = SaveSubmittedUser (user_p, job_p, data_p);
 
 																			FreeUser (user_p);
 																		}
@@ -658,33 +658,9 @@ static bool SetUpUsersListParameter (const UsersServiceData *data_p, StringParam
 
 
 
-static OperationStatus SaveUser (User *user_p, ServiceJob *job_p, UsersServiceData *data_p)
+static OperationStatus SaveSubmittedUser (User *user_p, ServiceJob *job_p, UsersServiceData *data_p)
 {
-	OperationStatus status = OS_FAILED;
-	bson_t *selector_p = NULL;
-	bool success_flag = PrepareSaveData (& (user_p -> us_id_p), &selector_p);
-
-	if (success_flag)
-		{
-			json_t *user_json_p = GetUserAsJSON (user_p, true);
-
-			if (user_json_p)
-				{
-					if (SaveMongoDataWithTimestamp (data_p -> usd_mongo_p, user_json_p, data_p -> usd_users_collection_s, selector_p, MONGO_TIMESTAMP_S))
-						{
-							status = OS_SUCCEEDED;
-						}
-					else
-						{
-							status = OS_FAILED;
-						}
-
-
-					json_decref (user_json_p);
-				}
-
-
-		}		/* if (success_flag) */
+	OperationStatus status = SaveUser (user_p, data_p -> usd_mongo_p, data_p -> usd_users_collection_s);
 
 	SetServiceJobStatus (job_p, status);
 
@@ -717,7 +693,7 @@ static User *GetUserFromResource (DataResource *resource_p, const NamedParameter
 							if (user_id_s)
 								{
 									GrassrootsServer *grassroots_p = us_data_p -> usd_base_data.sd_service_p -> se_grassroots_p;
-									user_p = GetUserByIdString (grassroots_p, user_id_s);
+									user_p = GetExistingUserByIdString (grassroots_p, user_id_s);
 
 									if (!user_p)
 										{
